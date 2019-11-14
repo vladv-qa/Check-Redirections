@@ -26,7 +26,7 @@ def read_csv(file_name, domain):
 def file_write(result, file_name):
     with open(f'reports/{file_name}', 'w', encoding='utf-8', newline='') as file:
         a_pen = csv.writer(file)
-        a_pen.writerow(('Base URl', 'Expected URL', 'Current URL', 'Assertation'))
+        a_pen.writerow(('Base URl', 'Expected URL', 'Actual URL', 'Assertation'))
         for row in result:
             a_pen.writerow((row['base_url'], row['expected_url'], row['current_url'], row['matching']))
     print(f"Writing is finished!!")
