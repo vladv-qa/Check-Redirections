@@ -3,7 +3,6 @@ import csv
 from colorama import init, Fore, Style
 import traceback
 import os
-init()
 
 
 def read_csv(file_name, domain):
@@ -37,7 +36,7 @@ def file_write(result, file_name):
         for row in result:
             a_pen.writerow((row['base_url'], row['expected_url'], row['current_url'], row['matching']))
     print(f"Writing is finished!!")
-    absolute_file_path =  os.path.abspath(os.path.join(dir_name)) + '\\' + file_name
+    absolute_file_path = os.path.abspath(os.path.join(dir_name)) + '\\' + file_name
     print(f"Location: {absolute_file_path}")
 
 
@@ -122,7 +121,9 @@ def read_config():
     print(params)
     return params
 
+
 try:
+    init()
     print("--- Script is running!!! ---")
     parameter = read_config()
     file = parameter[0]
@@ -138,5 +139,3 @@ try:
 except Exception as e:
     print('Error:\n', traceback.format_exc())
     input('Press ENTER to exit')
-
-
