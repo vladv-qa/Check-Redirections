@@ -32,9 +32,9 @@ def file_write(result, file_name):
         pass
     with open(f'reports/{file_name}', 'w', encoding='utf-8', newline='') as file:
         a_pen = csv.writer(file)
-        a_pen.writerow(('Base URl', 'Expected URL', 'Current URL', 'Assertation'))
+        a_pen.writerow(('Base URl', 'Expected URL', 'Current URL', 'Assertation', 'Status Code'))
         for row in result:
-            a_pen.writerow((row['base_url'], row['expected_url'], row['current_url'], row['matching']))
+            a_pen.writerow((row['base_url'], row['expected_url'], row['current_url'], row['matching'], row['status_code']))
     print(f"Writing is finished!!")
     absolute_file_path = os.path.abspath(os.path.join(dir_name)) + '\\' + file_name
     print(f"Location: {absolute_file_path}")
@@ -50,18 +50,21 @@ def check_redirects(base_url, expected_url):
     for b_url, exp_url in zip(base_url, expected_url):
         req = requests.get(b_url)
         current_url = req.url
+        status_code = req.status_code
         if current_url == exp_url:
             info = {
                 'matching': True,
                 'expected_url': exp_url,
                 'current_url': current_url,
-                'base_url': b_url
+                'base_url': b_url,
+                'status_code': status_code
             }
             result.append(info)
             output_true = [{
                 'matching': True,
                 'expected_url': exp_url,
-                'current_url': current_url
+                'current_url': current_url,
+                'status_code': status_code
             }
             ]
             print(Fore.GREEN + str(count) + ' ' + str(output_true))
@@ -71,14 +74,16 @@ def check_redirects(base_url, expected_url):
                 'matching': "THE SAME PAGE",
                 'expected_url': exp_url,
                 'current_url': current_url,
-                'base_url': b_url
+                'base_url': b_url,
+                'status_code': status_code
             }
             result.append(info)
             output_same = [{
                 'matching': "THE SAME PAGE",
                 'expected_url': exp_url,
                 'current_url': current_url,
-                'base_url': b_url
+                'base_url': b_url,
+                'status_code': status_code
             }]
             print(Fore.CYAN + str(count) + ' ' + str(output_same))
             same_page += 1
@@ -87,14 +92,16 @@ def check_redirects(base_url, expected_url):
                 'matching': False,
                 'expected_url': exp_url,
                 'current_url': current_url,
-                'base_url': b_url
+                'base_url': b_url,
+                'status_code': status_code
             }
             result.append(info)
             output_false = [{
                 'matching': "False",
                 'expected_url': exp_url,
                 'current_url': current_url,
-                'base_url': b_url
+                'base_url': b_url,
+                'status_code': status_code
             }]
             print(Fore.RED + str(count) + ' ' + str(output_false))
             uncorrect_links += 1
