@@ -10,7 +10,7 @@ def read_csv(file_name, domain):
     data_list = []
     base_urls = []
     expected_urls = []
-    with open(f'{file_name}', 'r', encoding='utf-8') as file:
+    with open(f'{file_name}', 'r') as file:
         data = csv.DictReader(file)
         for row in data:
             base_urls.append(domain + row['Test URL'])
@@ -27,14 +27,15 @@ def file_write(result, file_name):
     try:
         dir_name = 'reports'
         os.makedirs(dir_name)
-        print("Directory ", dir_name, " Created ")
+        print("Directory ", dir_name, " is Created ")
     except FileExistsError:
         pass
     with open(f'reports/{file_name}', 'w', encoding='utf-8', newline='') as file:
         a_pen = csv.writer(file)
-        a_pen.writerow(('Base URl', 'Expected URL', 'Current URL', 'Assertation', 'Status Code'))
+        a_pen.writerow(('Base URl', 'Expected URL', 'Actual URL', 'Assertation', 'Status Code'))
         for row in result:
-            a_pen.writerow((row['base_url'], row['expected_url'], row['current_url'], row['matching'], row['status_code']))
+            a_pen.writerow(
+                (row['base_url'], row['expected_url'], row['actual_url'], row['matching'], row['status_code']))
     print(f"Writing is finished!!")
     absolute_file_path = os.path.abspath(os.path.join(dir_name)) + '\\' + file_name
     print(f"Location: {absolute_file_path}")
@@ -48,14 +49,17 @@ def check_redirects(base_url, expected_url):
     result = []
     count = 1
     for b_url, exp_url in zip(base_url, expected_url):
-        req = requests.get(b_url)
-        current_url = req.url
-        status_code = req.status_code
-        if current_url == exp_url:
+        try:
+            req = requests.get(b_url)
+            actual_url = req.url
+            status_code = req.status_code
+        except ConnectionError:
+            print('Seems like dns lookup failed..')
+        if actual_url == exp_url:
             info = {
                 'matching': True,
                 'expected_url': exp_url,
-                'current_url': current_url,
+                'actual_url': actual_url,
                 'base_url': b_url,
                 'status_code': status_code
             }
@@ -63,17 +67,17 @@ def check_redirects(base_url, expected_url):
             output_true = [{
                 'matching': True,
                 'expected_url': exp_url,
-                'current_url': current_url,
+                'actual_url': actual_url,
                 'status_code': status_code
             }
             ]
             print(Fore.GREEN + str(count) + ' ' + str(output_true))
             correct_links += 1
-        elif current_url == b_url:
+        elif actual_url == b_url:
             info = {
                 'matching': "THE SAME PAGE",
                 'expected_url': exp_url,
-                'current_url': current_url,
+                'actual_url': actual_url,
                 'base_url': b_url,
                 'status_code': status_code
             }
@@ -81,7 +85,7 @@ def check_redirects(base_url, expected_url):
             output_same = [{
                 'matching': "THE SAME PAGE",
                 'expected_url': exp_url,
-                'current_url': current_url,
+                'actual_url': actual_url,
                 'base_url': b_url,
                 'status_code': status_code
             }]
@@ -91,7 +95,7 @@ def check_redirects(base_url, expected_url):
             info = {
                 'matching': False,
                 'expected_url': exp_url,
-                'current_url': current_url,
+                'actual_url': actual_url,
                 'base_url': b_url,
                 'status_code': status_code
             }
@@ -99,20 +103,21 @@ def check_redirects(base_url, expected_url):
             output_false = [{
                 'matching': "False",
                 'expected_url': exp_url,
-                'current_url': current_url,
+                'actual_url': actual_url,
                 'base_url': b_url,
                 'status_code': status_code
             }]
             print(Fore.RED + str(count) + ' ' + str(output_false))
             uncorrect_links += 1
         count += 1
+
     print(Style.RESET_ALL)
-    print("Checking finished ...")
+    print("Checking is finished ...")
     statistics = [{
         'Quantity of Test URLs': len(base_url),
-        'Correct redirections': correct_links,
-        'Uncorrect redirections': uncorrect_links,
-        'Redirect to the same age': same_page
+        'Correct redirects': correct_links,
+        'Incorrect redirects': uncorrect_links,
+        'Redirect to the same page': same_page
     }]
     print("Statistics: " + str(statistics) + '\n')
     return result
