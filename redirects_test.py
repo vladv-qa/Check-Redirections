@@ -10,7 +10,7 @@ def read_csv(file_name, domain):
     data_list = []
     base_urls = []
     expected_urls = []
-    with open(f'{file_name}', 'r') as file:
+    with open(f'{file_name}', 'r', encoding="utf8") as file:
         data = csv.DictReader(file)
         for row in data:
             base_urls.append(domain + row['Test URL'])
@@ -49,16 +49,21 @@ def check_redirects(base_url, expected_url):
     result = []
     count = 1
     for b_url, exp_url in zip(base_url, expected_url):
+
         try:
-            req = requests.get(b_url)
-            actual_url = req.url
-            status_code = req.status_code
+            if b_url == exp_url:
+                pass
+            else:
+                req = requests.get(b_url)
+                actual_url = req.url
+                status_code = req.status_code
         except ConnectionError:
             print('Seems like dns lookup failed..')
         if actual_url == exp_url:
             info = {
                 'matching': True,
                 'expected_url': exp_url,
+
                 'actual_url': actual_url,
                 'base_url': b_url,
                 'status_code': status_code
@@ -149,5 +154,6 @@ try:
     file_write(result=result, file_name=save_name)
     input('Press ENTER to exit')
 except Exception as e:
+    file_write(result=result, file_name=save_name)
     print('Error:\n', traceback.format_exc())
     input('Press ENTER to exit')
