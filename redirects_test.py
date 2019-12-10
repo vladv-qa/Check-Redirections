@@ -10,7 +10,7 @@ def read_csv(file_name, domain):
     data_list = []
     base_urls = []
     expected_urls = []
-    with open(f'{file_name}', 'r', encoding="utf8") as file:
+    with open(f'{file_name}', 'r') as file:
         data = csv.DictReader(file)
         for row in data:
             base_urls.append(domain + row['Test URL'])
