@@ -49,12 +49,11 @@ def check_redirects(base_url, expected_url):
     result = []
     count = 1
     for b_url, exp_url in zip(base_url, expected_url):
-
         try:
             if b_url == exp_url:
                 pass
             else:
-                req = requests.get(b_url)
+                req = requests.get(b_url, verify=False)
                 actual_url = req.url
                 status_code = req.status_code
         except ConnectionError:
