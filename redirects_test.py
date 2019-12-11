@@ -118,7 +118,7 @@ def check_redirects(base_url, expected_url):
                 count += 1
 
         except TooManyRedirects:
-            print("TOO MANY REDIRECTS FOR --> " + b_url)
+            print(Fore.RED + "TOO MANY REDIRECTS FOR --> " + b_url)
             info = {
                 'matching': "TOO MANY REDIRECTS",
                 'expected_url': exp_url,
