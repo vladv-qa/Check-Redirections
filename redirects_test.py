@@ -128,7 +128,6 @@ def check_redirects(base_url, expected_url):
                 'status_code': None
             }
             result.append(info)
-            pass
 
     print(Style.RESET_ALL)
     print("Checking is finished ...")
