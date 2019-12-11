@@ -5,6 +5,7 @@ import traceback
 import os
 from requests.exceptions import TooManyRedirects
 
+
 def read_csv(file_name, domain):
     print("Reading information from file ...")
     data_list = []
@@ -55,7 +56,8 @@ def check_redirects(base_url, expected_url):
             else:
                 r = requests.Session()
                 r.max_redirects = 3
-                req = r.get(b_url, proxies={"http": "http://127.0.0.1:8888","https":"http:127.0.0.1:8888"}, verify=False)
+                req = r.get(b_url, proxies={"http": "http://127.0.0.1:8888", "https": "http:127.0.0.1:8888"},
+                            verify=False)
                 actual_url = req.url
                 status_code = req.status_code
                 if actual_url == exp_url:
