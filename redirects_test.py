@@ -3,7 +3,7 @@ import csv
 from colorama import init, Fore, Style
 import traceback
 import os
-
+from requests.exceptions import TooManyRedirects
 
 def read_csv(file_name, domain):
     print("Reading information from file ...")
@@ -53,67 +53,80 @@ def check_redirects(base_url, expected_url):
             if b_url == exp_url:
                 pass
             else:
-                req = requests.get(b_url, verify=False)
+                r = requests.Session()
+                r.max_redirects = 3
+                req = r.get(b_url, proxies={"http": "http://127.0.0.1:8888","https":"http:127.0.0.1:8888"}, verify=False)
                 actual_url = req.url
                 status_code = req.status_code
-        except ConnectionError:
-            print('Seems like dns lookup failed..')
-        if actual_url == exp_url:
+                if actual_url == exp_url:
+                    info = {
+                        'matching': True,
+                        'expected_url': exp_url,
+
+                        'actual_url': actual_url,
+                        'base_url': b_url,
+                        'status_code': status_code
+                    }
+                    result.append(info)
+                    output_true = [{
+                        'matching': True,
+                        'expected_url': exp_url,
+                        'actual_url': actual_url,
+                        'status_code': status_code
+                    }
+                    ]
+                    print(Fore.GREEN + str(count) + ' ' + str(output_true))
+                    correct_links += 1
+                elif actual_url == b_url:
+                    info = {
+                        'matching': "THE SAME PAGE",
+                        'expected_url': exp_url,
+                        'actual_url': actual_url,
+                        'base_url': b_url,
+                        'status_code': status_code
+                    }
+                    result.append(info)
+                    output_same = [{
+                        'matching': "THE SAME PAGE",
+                        'expected_url': exp_url,
+                        'actual_url': actual_url,
+                        'base_url': b_url,
+                        'status_code': status_code
+                    }]
+                    print(Fore.CYAN + str(count) + ' ' + str(output_same))
+                    same_page += 1
+                else:
+                    info = {
+                        'matching': False,
+                        'expected_url': exp_url,
+                        'actual_url': actual_url,
+                        'base_url': b_url,
+                        'status_code': status_code
+                    }
+                    result.append(info)
+                    output_false = [{
+                        'matching': "False",
+                        'expected_url': exp_url,
+                        'actual_url': actual_url,
+                        'base_url': b_url,
+                        'status_code': status_code
+                    }]
+                    print(Fore.RED + str(count) + ' ' + str(output_false))
+                    uncorrect_links += 1
+                count += 1
+
+        except TooManyRedirects:
+            print("TOO MANY REDIRECTS FOR --> " + b_url)
             info = {
-                'matching': True,
+                'matching': "TOO MANY REDIRECTS",
                 'expected_url': exp_url,
 
-                'actual_url': actual_url,
+                'actual_url': b_url,
                 'base_url': b_url,
-                'status_code': status_code
+                'status_code': None
             }
             result.append(info)
-            output_true = [{
-                'matching': True,
-                'expected_url': exp_url,
-                'actual_url': actual_url,
-                'status_code': status_code
-            }
-            ]
-            print(Fore.GREEN + str(count) + ' ' + str(output_true))
-            correct_links += 1
-        elif actual_url == b_url:
-            info = {
-                'matching': "THE SAME PAGE",
-                'expected_url': exp_url,
-                'actual_url': actual_url,
-                'base_url': b_url,
-                'status_code': status_code
-            }
-            result.append(info)
-            output_same = [{
-                'matching': "THE SAME PAGE",
-                'expected_url': exp_url,
-                'actual_url': actual_url,
-                'base_url': b_url,
-                'status_code': status_code
-            }]
-            print(Fore.CYAN + str(count) + ' ' + str(output_same))
-            same_page += 1
-        else:
-            info = {
-                'matching': False,
-                'expected_url': exp_url,
-                'actual_url': actual_url,
-                'base_url': b_url,
-                'status_code': status_code
-            }
-            result.append(info)
-            output_false = [{
-                'matching': "False",
-                'expected_url': exp_url,
-                'actual_url': actual_url,
-                'base_url': b_url,
-                'status_code': status_code
-            }]
-            print(Fore.RED + str(count) + ' ' + str(output_false))
-            uncorrect_links += 1
-        count += 1
+            pass
 
     print(Style.RESET_ALL)
     print("Checking is finished ...")
