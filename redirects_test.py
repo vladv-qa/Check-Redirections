@@ -5,6 +5,7 @@ import traceback
 import os
 from requests.exceptions import TooManyRedirects
 
+
 # Function for reading data from csv file. First argument is name of CSV file and the second is domain.
 # When you read URL path from CSV you are adding domain to the beginning
 # Function return dictionary which contains Tested URL and Expected URL
@@ -25,25 +26,10 @@ def read_csv(file_name, domain):
     print("Reading is finished")
     return data_list
 
+
 # Function for write result
 # Function takes 2 arguments: 1) result list; 2) Name of result file
-def file_write(result, file_name):
-    try:
-        dir_name = 'reports'
-        os.makedirs(dir_name)
-        print("Directory ", dir_name, " is Created ")
-    except FileExistsError:
-        pass
-    with open(f'reports/{file_name}', 'w', encoding='utf-8', newline='') as file:
-        a_pen = csv.writer(file)
-        a_pen.writerow(('Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page'))
-        a_pen.writerow(('Base URl', 'Expected URL', 'Actual URL', 'Assertation', 'Status Code'))
-        for row in result:
-            a_pen.writerow(
-                (row['base_url'], row['expected_url'], row['actual_url'], row['matching'], row['status_code']))
-    print(f"Writing is finished!!")
-    absolute_file_path = os.path.abspath(os.path.join(dir_name)) + '\\' + file_name
-    print(f"Location: {absolute_file_path}")
+
 
 # Function for checking link redirects
 # Function takes 2 arguments: 1) list of Tested URLs; 2) list of Expected URLs
@@ -144,7 +130,8 @@ def check_redirects(base_url, expected_url):
     }]
     print("Statistics: " + str(statistics) + '\n')
 
-    return result
+    return result, statistics
+
 
 # function for get data from config file
 def read_config():
@@ -158,6 +145,29 @@ def read_config():
     return params
 
 
+def file_write(result, statistics, file_name):
+    try:
+        dir_name = 'reports'
+        os.makedirs(dir_name)
+        print("Directory ", dir_name, " is Created ")
+    except FileExistsError:
+        pass
+    with open(f'reports/{file_name}', 'w', encoding='utf-8', newline='') as file:
+        a_pen = csv.writer(file)
+        a_pen.writerow(
+            ('Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page'))
+        for value in statistics:
+            a_pen.writerow((value['Quantity of Test URLs'], value['Correct redirects'], value['Incorrect redirects'],
+                            value['Redirect to the same page']))
+        a_pen.writerow(('Base URl', 'Expected URL', 'Actual URL', 'Assertation', 'Status Code'))
+        for row in result:
+            a_pen.writerow(
+                (row['base_url'], row['expected_url'], row['actual_url'], row['matching'], row['status_code']))
+    print(f"Writing is finished!!")
+    absolute_file_path = os.path.abspath(os.path.join(dir_name)) + '\\' + file_name
+    print(f"Location: {absolute_file_path}")
+
+
 try:
     init()
     print("--- Script is running!!! ---")
@@ -169,8 +179,8 @@ try:
     base_url_list = info[0].get('base_urls')
     print('Quantity of Test URLs: ' + str(len(base_url_list)))
     expected_url_list = info[-1].get('expected_urls')
-    result = check_redirects(base_url=base_url_list, expected_url=expected_url_list)
-    file_write(result=result, file_name=save_name)
+    result, statistic = check_redirects(base_url=base_url_list, expected_url=expected_url_list)
+    file_write(result=result, statistics=statistic, file_name=save_name)
     input('Press ENTER to exit')
 except Exception as e:
     file_write(result=result, file_name=save_name)
