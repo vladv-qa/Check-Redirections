@@ -5,13 +5,15 @@ import traceback
 import os
 from requests.exceptions import TooManyRedirects
 
-
+# Function for reading data from csv file. First argument is name of CSV file and the second is domain.
+# When you read URL path from CSV you are adding domain to the beginning
+# Function return dictionary which contains Tested URL and Expected URL
 def read_csv(file_name, domain):
     print("Reading information from file ...")
     data_list = []
     base_urls = []
     expected_urls = []
-    with open(f'{file_name}', 'r') as file:
+    with open(f'{file_name}', 'r', encoding="utf-8") as file:
         data = csv.DictReader(file)
         for row in data:
             base_urls.append(domain + row['Test URL'])
@@ -23,7 +25,8 @@ def read_csv(file_name, domain):
     print("Reading is finished")
     return data_list
 
-
+# Function for write result
+# Function takes 2 arguments: 1) result list; 2) Name of result file
 def file_write(result, file_name):
     try:
         dir_name = 'reports'
@@ -33,6 +36,7 @@ def file_write(result, file_name):
         pass
     with open(f'reports/{file_name}', 'w', encoding='utf-8', newline='') as file:
         a_pen = csv.writer(file)
+        a_pen.writerow(('Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page'))
         a_pen.writerow(('Base URl', 'Expected URL', 'Actual URL', 'Assertation', 'Status Code'))
         for row in result:
             a_pen.writerow(
@@ -41,11 +45,13 @@ def file_write(result, file_name):
     absolute_file_path = os.path.abspath(os.path.join(dir_name)) + '\\' + file_name
     print(f"Location: {absolute_file_path}")
 
-
+# Function for checking link redirects
+# Function takes 2 arguments: 1) list of Tested URLs; 2) list of Expected URLs
+# Function return
 def check_redirects(base_url, expected_url):
     print("Start checking ...")
     correct_links = 0
-    uncorrect_links = 0
+    incorrect_links = 0
     same_page = 0
     result = []
     count = 1
@@ -56,8 +62,7 @@ def check_redirects(base_url, expected_url):
             else:
                 r = requests.Session()
                 r.max_redirects = 3
-                req = r.get(b_url, proxies={"http": "http://127.0.0.1:8888", "https": "http:127.0.0.1:8888"},
-                            verify=False)
+                req = r.get(b_url, verify=False)
                 actual_url = req.url
                 status_code = req.status_code
                 if actual_url == exp_url:
@@ -114,7 +119,7 @@ def check_redirects(base_url, expected_url):
                         'status_code': status_code
                     }]
                     print(Fore.RED + str(count) + ' ' + str(output_false))
-                    uncorrect_links += 1
+                    incorrect_links += 1
                 count += 1
 
         except TooManyRedirects:
@@ -134,13 +139,14 @@ def check_redirects(base_url, expected_url):
     statistics = [{
         'Quantity of Test URLs': len(base_url),
         'Correct redirects': correct_links,
-        'Incorrect redirects': uncorrect_links,
+        'Incorrect redirects': incorrect_links,
         'Redirect to the same page': same_page
     }]
     print("Statistics: " + str(statistics) + '\n')
+
     return result
 
-
+# function for get data from config file
 def read_config():
     params = []
     f = open('config.txt', 'r')
