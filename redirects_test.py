@@ -27,10 +27,6 @@ def read_csv(file_name, domain):
     return data_list
 
 
-# Function for write result
-# Function takes 2 arguments: 1) result list; 2) Name of result file
-
-
 # Function for checking link redirects
 # Function takes 2 arguments: 1) list of Tested URLs; 2) list of Expected URLs
 # Function return
@@ -145,6 +141,8 @@ def read_config():
     return params
 
 
+# Function for write result
+# Function takes 2 arguments: 1) result list; 2) Name of result file
 def file_write(result, statistics, file_name):
     try:
         dir_name = 'reports'
