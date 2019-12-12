@@ -1,0 +1,1 @@
+pyinstaller -F redirects_test.py
