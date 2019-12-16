@@ -136,7 +136,8 @@ def check_redirects(base_url, actual_urls, expected_urls):
         'Quantity of Test URLs': len(base_url),
         'Correct redirects': correct_links,
         'Incorrect redirects': incorrect_links,
-        'Redirect to the same page': same_page
+        'Redirect to the same page': same_page,
+        'Duration': None
     }]
     print("Statistics: " + str(statistics) + '\n')
     return result, statistics
@@ -164,10 +165,10 @@ def file_write(result, statistics, file_name):
     with open(f'reports/{file_name}', 'w', encoding='utf-8', newline='') as file:
         a_pen = csv.writer(file)
         a_pen.writerow(
-            ('Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page'))
+            ('Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page', 'Duration'))
         for value in statistics:
             a_pen.writerow((value['Quantity of Test URLs'], value['Correct redirects'], value['Incorrect redirects'],
-                            value['Redirect to the same page']))
+                            value['Redirect to the same page'], value['Duration']))
         a_pen.writerow(('Base URl', 'Expected URL', 'Actual URL', 'Assertation'))
         for row in result:
             a_pen.writerow(
@@ -192,6 +193,9 @@ try:
     actual_urls_list = get_redirected_urls(base_url=base_url_list)
     final_result, statistic = check_redirects(base_url=base_url_list, actual_urls=actual_urls_list,
                                               expected_urls=expected_url_list)
+    work_time = str(f'{time.time() - start : .2f} seconds')
+    statistic[0]['Duration'] = work_time
+    print(statistic)
     file_write(result=final_result, statistics=statistic, file_name=save_name)
     print(f'Work time: {time.time() - start : .2f} seconds')
     input('Press ENTER to exit')
