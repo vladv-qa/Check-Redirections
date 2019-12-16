@@ -8,6 +8,7 @@ import time
 from requests.exceptions import TooManyRedirects
 
 
+
 def read_csv(file_name, domain):
     print("Reading information from file ...")
     data_list = []
