@@ -40,11 +40,15 @@ def read_config():
 
 # make GET request and return redirected URL from response
 def get_url(url):
-    r = requests.Session()
-    r.max_redirects = 3
-    response = r.get(url, verify=False)
-    url = response.url
-    return url
+    try:
+        r = requests.Session()
+        r.max_redirects = 3
+        response = r.get(url, verify=False)
+        red_url = response.url
+        return red_url
+    except TooManyRedirects:
+        print("TOO MANY REDIRECTS FOR --> " + str(url))
+        return 'Exception: Too many redirects'
 
 
 # this function takes base urls list, call get_url() function and after that creating list of redirected URLs
@@ -65,66 +69,66 @@ def check_redirects(base_url, actual_urls, expected_urls):
     same_page = 0
     result = []
     count = 1
-    try:
-        for ac_url, exp_url, b_url in zip(actual_urls, expected_urls, base_url):
-            if ac_url == exp_url:
-                info = {
-                    'matching': True,
-                    'expected_url': exp_url,
-                    'actual_url': ac_url,
-                    'base_url': b_url,
-                }
-                result.append(info)
-                output_true = [{
-                    'matching': True,
-                    'expected_url': exp_url,
-                    'actual_url': ac_url
-                }
-                ]
-                # print(Fore.GREEN + str(count) + ' ' + str(output_true))
-                correct_links += 1
-            elif ac_url == b_url:
-                info = {
-                    'matching': "THE SAME PAGE",
-                    'expected_url': exp_url,
-                    'actual_url': ac_url,
-                    'base_url': b_url
-                }
-                result.append(info)
-                output_same = [{
-                    'matching': "THE SAME PAGE",
-                    'expected_url': exp_url,
-                    'actual_url': ac_url,
-                    'base_url': b_url
-                }]
-                # print(Fore.CYAN + str(count) + ' ' + str(output_same))
-                same_page += 1
-            else:
-                info = {
-                    'matching': False,
-                    'expected_url': exp_url,
-                    'actual_url': ac_url,
-                    'base_url': b_url
-                }
-                result.append(info)
-                output_false = [{
-                    'matching': "False",
-                    'expected_url': exp_url,
-                    'actual_url': ac_url,
-                    'base_url': b_url
-                }]
-                # print(Fore.RED + str(count) + ' ' + str(output_false))
-                incorrect_links += 1
-            count += 1
-    except TooManyRedirects:
-        info = {
-            'matching': "TOO MANY REDIRECTS",
-            'expected_url': exp_url,
-            'actual_url': b_url,
-            'base_url': b_url,
-            'status_code': None
-        }
-        result.append(info)
+
+    for ac_url, exp_url, b_url in zip(actual_urls, expected_urls, base_url):
+        if ac_url == 'Exception: Too many redirects':
+            info = {
+                'matching': "TOO MANY REDIRECTS",
+                'expected_url': exp_url,
+                'actual_url': b_url,
+                'base_url': b_url,
+                'status_code': None
+            }
+            result.append(info)
+        elif ac_url == exp_url:
+            info = {
+                'matching': True,
+                'expected_url': exp_url,
+                'actual_url': ac_url,
+                'base_url': b_url,
+            }
+            result.append(info)
+            output_true = [{
+                'matching': True,
+                'expected_url': exp_url,
+                'actual_url': ac_url
+            }
+            ]
+            # print(Fore.GREEN + str(count) + ' ' + str(output_true))
+            correct_links += 1
+        elif ac_url == b_url:
+            info = {
+                'matching': "THE SAME PAGE",
+                'expected_url': exp_url,
+                'actual_url': ac_url,
+                'base_url': b_url
+            }
+            result.append(info)
+            output_same = [{
+                'matching': "THE SAME PAGE",
+                'expected_url': exp_url,
+                'actual_url': ac_url,
+                'base_url': b_url
+            }]
+            # print(Fore.CYAN + str(count) + ' ' + str(output_same))
+            same_page += 1
+        else:
+            info = {
+                'matching': False,
+                'expected_url': exp_url,
+                'actual_url': ac_url,
+                'base_url': b_url
+            }
+            result.append(info)
+            output_false = [{
+                'matching': "False",
+                'expected_url': exp_url,
+                'actual_url': ac_url,
+                'base_url': b_url
+            }]
+            # print(Fore.RED + str(count) + ' ' + str(output_false))
+            incorrect_links += 1
+        count += 1
     print(Style.RESET_ALL)
     print("Checking is finished ...")
     statistics = [{
