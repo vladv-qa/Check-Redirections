@@ -6,7 +6,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 import time
 from requests.exceptions import TooManyRedirects
-
+import matplotlib.pyplot as plt
 
 
 def read_csv(file_name, domain):
@@ -139,7 +139,6 @@ def check_redirects(base_url, actual_urls, expected_urls):
         'Redirect to the same page': same_page,
         'Duration': None
     }]
-    print("Statistics: " + str(statistics) + '\n')
     return result, statistics
 
 
@@ -177,6 +176,17 @@ def file_write(result, statistics, file_name):
     absolute_file_path = os.path.abspath(os.path.join(dir_name)) + '\\' + file_name
     print(f"Location: {absolute_file_path}")
 
+def pie_chart(statistic):
+    labels = 'Correct', 'The same page', 'Incorrect'
+    sizes = [statistic[0]['Correct redirects'], statistic[0]['Redirect to the same page'],
+             statistic[0]['Incorrect redirects']]
+    colors = ['green', 'blue', 'red']
+    patches, texts = plt.pie(sizes, colors=colors, shadow=True, startangle=90)
+    plt.legend(patches, labels, loc="best")
+    plt.axis('equal')
+    plt.tight_layout()
+    plt.show()
+    ...
 
 try:
     init()
@@ -195,9 +205,8 @@ try:
                                               expected_urls=expected_url_list)
     work_time = str(f'{time.time() - start : .2f} seconds')
     statistic[0]['Duration'] = work_time
-    print(statistic)
+    pie_chart(statistic)
     file_write(result=final_result, statistics=statistic, file_name=save_name)
-    print(f'Work time: {time.time() - start : .2f} seconds')
     input('Press ENTER to exit')
 
 except Exception as e:
