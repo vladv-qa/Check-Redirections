@@ -191,20 +191,22 @@ def intialize_sheet(url):
         return False
 
 
-
-def write_to_sheet(sheet, worksheet, statisics, result, ):
+def write_to_sheet(sheet, worksheet, statisics, result):
     selectedSheet = sheet.worksheet(worksheet)
     first_row_stat = ['Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page',
-             'Duration']
-    second_row_stat = [statisics[0]['Quantity of Test URLs'], statisics[0]['Correct redirects'], statisics[0]['Incorrect redirects'], statisics[0]['Redirect to the same page'], statisics[0]['Duration']]
+                      'Duration']
+    second_row_stat = [statisics[0]['Quantity of Test URLs'], statisics[0]['Correct redirects'],
+                       statisics[0]['Incorrect redirects'], statisics[0]['Redirect to the same page'],
+                       statisics[0]['Duration']]
     first_row_result = ['Base URl', 'Expected URL', 'Actual URL', 'Assertation']
     selectedSheet.insert_row(first_row_stat, 1)
-    selectedSheet.insert_row(second_row_stat,2)
+    selectedSheet.insert_row(second_row_stat, 2)
     selectedSheet.insert_row(first_row_result, 3)
     index = 4
     for row in result:
         insertRow = [row['base_url'], row['expected_url'], row['actual_url'], row['matching']]
         selectedSheet.insert_row(insertRow, index)
+
 
 try:
     init()
@@ -223,6 +225,7 @@ try:
                                               expected_urls=expected_url_list)
     work_time = str(f'{time.time() - start : .2f} seconds')
     statistic[0]['Duration'] = work_time
+    print(statistic)
     file_write(result=final_result, statistics=statistic, file_name=save_name)
     while True:
         answer = input('Do you want to insert results to Google Sheets? (yes/no)--> ')
