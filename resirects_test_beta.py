@@ -6,7 +6,9 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 import time
 from requests.exceptions import TooManyRedirects
-import matplotlib.pyplot as plt
+from pprint import pprint
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 
 def read_csv(file_name, domain):
@@ -164,7 +166,8 @@ def file_write(result, statistics, file_name):
     with open(f'reports/{file_name}', 'w', encoding='utf-8', newline='') as file:
         a_pen = csv.writer(file)
         a_pen.writerow(
-            ('Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page', 'Duration'))
+            ('Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page',
+             'Duration'))
         for value in statistics:
             a_pen.writerow((value['Quantity of Test URLs'], value['Correct redirects'], value['Incorrect redirects'],
                             value['Redirect to the same page'], value['Duration']))
@@ -176,17 +179,32 @@ def file_write(result, statistics, file_name):
     absolute_file_path = os.path.abspath(os.path.join(dir_name)) + '\\' + file_name
     print(f"Location: {absolute_file_path}")
 
-def pie_chart(statistic):
-    labels = 'Correct', 'The same page', 'Incorrect'
-    sizes = [statistic[0]['Correct redirects'], statistic[0]['Redirect to the same page'],
-             statistic[0]['Incorrect redirects']]
-    colors = ['green', 'blue', 'red']
-    patches, texts = plt.pie(sizes, colors=colors, shadow=True, startangle=90)
-    plt.legend(patches, labels, loc="best")
-    plt.axis('equal')
-    plt.tight_layout()
-    plt.show()
-    ...
+
+def intialize_sheet(url):
+    try:
+        scope = ["https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+        client = gspread.authorize(creds)
+        sheet = client.open_by_url(url)
+        return sheet
+    except gspread.NoValidUrlKeyFound:
+        return False
+
+
+
+def write_to_sheet(sheet, worksheet, statisics, result, ):
+    selectedSheet = sheet.worksheet(worksheet)
+    first_row_stat = ['Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page',
+             'Duration']
+    second_row_stat = [statisics[0]['Quantity of Test URLs'], statisics[0]['Correct redirects'], statisics[0]['Incorrect redirects'], statisics[0]['Redirect to the same page'], statisics[0]['Duration']]
+    first_row_result = ['Base URl', 'Expected URL', 'Actual URL', 'Assertation']
+    selectedSheet.insert_row(first_row_stat, 1)
+    selectedSheet.insert_row(second_row_stat,2)
+    selectedSheet.insert_row(first_row_result, 3)
+    index = 4
+    for row in result:
+        insertRow = [row['base_url'], row['expected_url'], row['actual_url'], row['matching']]
+        selectedSheet.insert_row(insertRow, index)
 
 try:
     init()
@@ -205,9 +223,59 @@ try:
                                               expected_urls=expected_url_list)
     work_time = str(f'{time.time() - start : .2f} seconds')
     statistic[0]['Duration'] = work_time
-    pie_chart(statistic)
     file_write(result=final_result, statistics=statistic, file_name=save_name)
-    input('Press ENTER to exit')
+    while True:
+        answer = input('Do you want to insert results to Google Sheets? (yes/no)--> ')
+        if answer == 'yes':
+            print("Give access to edit for this account: test-123@lofty-root-262508.iam.gserviceaccount.com")
+            assertation = True
+            while assertation == True:
+                documentURL = input("Paste URL of SpreadSheet --> ")
+                sh = intialize_sheet(documentURL)
+                if sh == False:
+                    print("Something wrong with URL")
+                    assertation = True
+                else:
+                    assertation = False
+            worksheet_list = sh.worksheets()
+            ws_list_titles = []
+            for item in worksheet_list:
+                title = item.title
+                ws_list_titles.append(title)
+            print("Available worksheets:")
+            pprint(ws_list_titles)
+            while True:
+                userSelect = input("Select worksheet or Create New Workshhet (input Create)--> ")
+                if userSelect in ws_list_titles:
+                    print("Writting is started...")
+                    write_to_sheet(sheet=sh, worksheet=userSelect, statisics=statistic, result=final_result)
+                    print("Writting is finished!")
+                    break
+                elif userSelect == 'Create':
+                    new_sheet_name = ws_list_titles[0]
+                    while new_sheet_name in ws_list_titles:
+                        new_sheet_name = input("Input New Sheet Name --> ")
+                        if new_sheet_name in ws_list_titles:
+                            print("The Sheet with this name is already exist!!!")
+                        else:
+                            new_worksheet = sh.add_worksheet(title=new_sheet_name, rows="1000", cols="20")
+                            print("Writting is started...")
+                            write_to_sheet(sheet=sh, worksheet=new_sheet_name, statisics=statistic,
+                                           result=final_result)
+                            print("Writting is finished!")
+                            break
+                    break
+                else:
+                    print("Wrong worksheet name!!! Try one more time")
+            input("Press Enter to exit")
+            break
+        elif answer == "no":
+            input("Press Enter to exit")
+            break
+        else:
+            print("Incorrect answer! Try again")
+
+
 
 except Exception as e:
     print('Error:\n', traceback.format_exc())
