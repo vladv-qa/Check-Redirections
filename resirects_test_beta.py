@@ -191,13 +191,13 @@ def intialize_sheet(url):
         return False
 
 
-def write_to_sheet(sheet, worksheet, statisics, result):
+def write_to_sheet(sheet, worksheet, stat, result):
     selectedSheet = sheet.worksheet(worksheet)
     first_row_stat = ['Quantity of Test URLs', 'Correct redirects', 'Incorrect redirects', 'Redirect to the same page',
                       'Duration']
-    second_row_stat = [statisics[0]['Quantity of Test URLs'], statisics[0]['Correct redirects'],
-                       statisics[0]['Incorrect redirects'], statisics[0]['Redirect to the same page'],
-                       statisics[0]['Duration']]
+    second_row_stat = [stat[0]['Quantity of Test URLs'], stat[0]['Correct redirects'],
+                       stat[0]['Incorrect redirects'], stat[0]['Redirect to the same page'],
+                       stat[0]['Duration']]
     first_row_result = ['Base URl', 'Expected URL', 'Actual URL', 'Assertation']
     selectedSheet.insert_row(first_row_stat, 1)
     selectedSheet.insert_row(second_row_stat, 2)
