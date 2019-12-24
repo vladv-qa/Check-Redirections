@@ -251,7 +251,7 @@ try:
                 userSelect = input("Select worksheet or Create New Workshhet (input Create)--> ")
                 if userSelect in ws_list_titles:
                     print("Writting is started...")
-                    write_to_sheet(sheet=sh, worksheet=userSelect, statisics=statistic, result=final_result)
+                    write_to_sheet(sheet=sh, worksheet=userSelect, stat=statistic, result=final_result)
                     print("Writting is finished!")
                     break
                 elif userSelect == 'Create':
@@ -263,7 +263,7 @@ try:
                         else:
                             new_worksheet = sh.add_worksheet(title=new_sheet_name, rows="1000", cols="20")
                             print("Writting is started...")
-                            write_to_sheet(sheet=sh, worksheet=new_sheet_name, statisics=statistic,
+                            write_to_sheet(sheet=sh, worksheet=new_sheet_name, stat=statistic,
                                            result=final_result)
                             print("Writting is finished!")
                             break
